@@ -104,13 +104,28 @@ Use the `/aci` slash command or just ask Claude about ACI in any conversation:
 
 ## Spreadsheet Deployment
 
-If you have an ACI deployment spreadsheet (like the Easy ACI format), Claude can parse it and deploy:
+A template spreadsheet is included at [`templates/aci-deploy-template.xlsx`](templates/aci-deploy-template.xlsx). It has these tabs pre-formatted with sample data:
+
+| Tab | Purpose |
+|-----|---------|
+| **Tenants** | Tenant, VRF, BD, EPG, gateway, VLAN, domain mapping |
+| **Leaf Profiles** | Switch profiles and interface selector profiles |
+| **VPC Profiles** | VPC pairs with node IDs and policy groups |
+| **vlan pools** | VLAN pool names, modes, and ranges |
+| **domains** | Physical and L3 domains with VLAN pool bindings |
+| **aaep** | Attachable Access Entity Profiles with domain links |
+| **L3Out** | L3Out definitions with nodes, VRF, loopbacks |
+| **Device Inventory** | Fabric node reference (APICs, spines, leaves) |
+
+**To use:**
+1. Download the template and fill in your data
+2. Tell Claude the path:
 
 ```
-/aci deploy from this spreadsheet
+/aci deploy from /path/to/my-aci-deploy.xlsx
 ```
 
-Then drag/drop or paste the path to your `.xlsx` file. Claude reads the tabs (Tenants, Leaf Profiles, VPC Profiles), builds the full polUni JSON tree, shows a dry-run, and deploys on your confirmation.
+Claude reads all tabs, builds the full ACI JSON tree, shows a dry-run summary, and deploys on your confirmation.
 
 ## Requirements
 
