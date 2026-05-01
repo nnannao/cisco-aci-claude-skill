@@ -1,38 +1,56 @@
-# Cisco ACI Claude Code Skill
+# Cisco ACI Claude Skill
 
-A [Claude Code](https://claude.ai/code) skill that lets you manage Cisco ACI fabrics through natural language. Read fabric state, create tenants, deploy EPGs, audit health, and push configurations — all by talking to Claude.
+AI-assisted Cisco ACI analysis and deployment workflows for network engineers and consultants.
 
 **Built by [Blue Sodium](https://bluesodium.com)** — Cisco ACI specialists since day one.
 
-## Demo
+## What this is
 
-```
-You: show me the fabric health
-Claude: *logs into APIC, pulls health scores, node status, active faults*
-       Fabric health: 95. 6 leaves, 2 spines, 3 controllers.
-       2 minor faults (interface down on leaf-103 e1/48, NTP sync warning).
+This skill helps Claude reason through Cisco ACI environments using structured review workflows for tenants, VRFs, bridge domains, EPGs, contracts, L3Outs, and segmentation policy.
 
-You: create a tenant called ACME with a VRF, a BD for servers on 10.10.10.0/24,
-     and an EPG called Servers mapped to the BD
-Claude: *builds JSON payload, shows it*
-       Here's the deployment payload. Should I push this to APIC?
+It is designed for expert-assisted analysis, documentation, change planning, and deployment — with human approval at every step.
 
-You: yes
-Claude: *POSTs to APIC*
-       Done. Tenant ACME created with VRF, BD (10.10.10.1/24), and Servers EPG.
-```
+## Example use cases
+
+- Review ACI tenant design for segmentation issues
+- Explain EPG-to-EPG communication paths
+- Analyze contract intent and gaps
+- Generate migration/change review checklists
+- Produce client-facing ACI assessment notes
+- Help document existing ACI fabric policy structure
+- Read live fabric state (health, faults, firmware, endpoints)
+- Build and deploy tenant/VRF/BD/EPG configurations from natural language or spreadsheet
+- Create static path bindings, contracts, L3Outs, and VLAN pools
+
+## Read and write
+
+**Reads** pull live data from the APIC REST API — fabric health, tenant inventory, faults, firmware versions, endpoints. Always safe, no approval needed beyond standard Claude Code permissions.
+
+**Writes require human approval.** Claude builds the JSON payload, shows it to you, and waits for you to approve the execution. Nothing is pushed to APIC without your explicit confirmation. This is the correct workflow — no network engineer wants an AI pushing configs without review.
+
+## What it is not
+
+- Not an autonomous network change tool
+- Not a replacement for Cisco expertise
+- Not a vulnerability scanner
+
+## Why it exists
+
+Most AI tools can summarize configs, but they do not naturally understand how network engineers reason through ACI policy models. This skill encodes repeatable analysis patterns from real network consulting work.
 
 ## Install
 
-Copy the skill file to your Claude Code skills directory:
+```bash
+# One-liner install (global — available in all projects)
+curl -o ~/.claude/skills/aci-operator.md \
+  https://raw.githubusercontent.com/nnannao/cisco-aci-claude-skill/main/aci-operator.md
+```
+
+Or clone and copy:
 
 ```bash
-# Global (available in all projects)
-cp aci-operator.md ~/.claude/skills/
-
-# Or project-specific
-mkdir -p .claude/skills/
-cp aci-operator.md .claude/skills/
+git clone https://github.com/nnannao/cisco-aci-claude-skill.git
+cp cisco-aci-claude-skill/aci-operator.md ~/.claude/skills/
 ```
 
 Restart Claude Code. You'll see `/aci` in your available slash commands.
@@ -48,11 +66,7 @@ export APIC_PASSWORD=your-password
 export APIC_DOMAIN=              # optional: for remote auth domains
 ```
 
-Or add them to your shell profile (`~/.zshrc`, `~/.bashrc`).
-
 ## Usage
-
-Use the `/aci` slash command or just ask Claude about ACI in any conversation:
 
 ```
 /aci show me the fabric health
@@ -62,49 +76,12 @@ Use the `/aci` slash command or just ask Claude about ACI in any conversation:
 /aci show all faults
 /aci add VLAN 100 to leaf 101 port 1/1 on EPG Servers
 /aci audit the fabric
+/aci deploy from /path/to/my-aci-deploy.xlsx
 ```
 
-## What It Can Do
+## Spreadsheet deployment
 
-### Read (always safe)
-- Fabric health scores and node status
-- Tenant, VRF, BD, EPG, subnet inventory
-- Contract and filter configuration
-- L3Out and BGP peer status
-- Switch/spine profiles and interface policies
-- VLAN pools, domains, AEPs
-- Firmware versions across all nodes
-- Active faults by severity
-- Learned endpoints (MAC/IP)
-
-### Write (dry-run first, then confirm)
-- Create/modify/delete tenants, VRFs, BDs, EPGs
-- Add subnets to bridge domains
-- Create contracts and attach to EPGs
-- Configure static path bindings (VLAN-to-port)
-- Set up L3Outs with BGP/OSPF/static routing
-- Create switch profiles, interface profiles, policy groups
-- Configure VLAN pools, physical domains, AEPs
-- Spreadsheet-driven bulk deployment
-
-### Audit
-- Full fabric inventory report
-- Health score analysis per node
-- Fault summary and trending
-- Firmware version audit
-- Unused EPG detection
-- Contract hit analysis
-
-## Safety
-
-- **Dry-run by default.** Every write operation shows the JSON payload before pushing. You must confirm.
-- **No credential storage.** Credentials come from environment variables only.
-- **Read before write.** The skill checks if objects exist before creating them.
-- **Delete protection.** Tenant/VRF/BD deletions require explicit confirmation with impact summary.
-
-## Spreadsheet Deployment
-
-A template spreadsheet is included at [`templates/aci-deploy-template.xlsx`](templates/aci-deploy-template.xlsx). It has these tabs pre-formatted with sample data:
+A template spreadsheet is included at [`templates/aci-deploy-template.xlsx`](templates/aci-deploy-template.xlsx) with these tabs:
 
 | Tab | Purpose |
 |-----|---------|
@@ -117,19 +94,11 @@ A template spreadsheet is included at [`templates/aci-deploy-template.xlsx`](tem
 | **L3Out** | L3Out definitions with nodes, VRF, loopbacks |
 | **Device Inventory** | Fabric node reference (APICs, spines, leaves) |
 
-**To use:**
-1. Download the template and fill in your data
-2. Tell Claude the path:
-
-```
-/aci deploy from /path/to/my-aci-deploy.xlsx
-```
-
-Claude reads all tabs, builds the full ACI JSON tree, shows a dry-run summary, and deploys on your confirmation.
+Download the template, fill in your data, and tell Claude the path. It reads all tabs, builds the full ACI JSON tree, shows a dry-run summary, and deploys on your confirmation.
 
 ## Requirements
 
-- Claude Code (claude.ai/code)
+- [Claude Code](https://claude.ai/code)
 - Network access to your APIC
 - APIC admin credentials
 - `curl` and `python3` (included on macOS/Linux)
