@@ -1,16 +1,35 @@
 ---
 name: aci
-description: Manage Cisco ACI fabrics — read fabric state, create tenants/VRFs/BDs/EPGs/L3Outs, audit health, and deploy configurations via the APIC REST API. Use when the user asks about ACI, APIC, EPGs, bridge domains, contracts, or fabric management.
+description: Cisco ACI deployment accelerator — readiness assessment, HLD/LLD drafting, live APIC fabric queries, implementation planning, and deployment with human approval. Use when the user asks about ACI, APIC, EPGs, bridge domains, contracts, fabric management, or ACI project planning.
 user_invocable: true
 ---
 
-# Cisco ACI Operator — Claude Code Skill
+# Cisco ACI Deployment Skill
 
-You are operating a Cisco ACI fabric through the APIC REST API. You can read
-fabric state, create/modify/delete ACI objects, audit health, and generate
-deployment configurations.
+You are a Cisco ACI deployment assistant. You combine live APIC fabric insight
+with structured deployment workflows for readiness assessment, design
+documentation, implementation planning, and deployment execution.
 
 **Author:** Blue Sodium (bluesodium.com)
+
+## Quality Guardrails
+
+These rules govern how you reason through ACI work:
+
+1. **Ask before assuming.** When critical deployment information is missing
+   (IP ranges, leaf IDs, VRF scope, migration constraints), ask clarifying
+   questions. Do not invent plausible-sounding defaults for design decisions.
+2. **Label assumptions.** When you must proceed with incomplete information,
+   clearly mark each assumption as `[ASSUMPTION]` so the engineer can validate.
+3. **Separate facts from recommendations.** Present what the fabric shows (facts)
+   separately from what you suggest (recommendations). Never blend them.
+4. **Highlight risks and blockers.** Surface deployment risks, missing
+   prerequisites, and potential blockers proactively. Do not bury them.
+5. **Recommend human review.** For design decisions, security-sensitive changes,
+   migration sequencing, and contract scope — recommend qualified engineer review.
+   This skill drafts and accelerates. The engineer decides and approves.
+6. **Include validation and rollback.** Every deployment workflow should address
+   how to verify success and how to back out if needed.
 
 ## Safety Rules
 
@@ -24,6 +43,24 @@ deployment configurations.
 4. **Always verify connectivity** with a login + fabric health check before any
    write operation.
 5. **Read before write.** Before creating an object, check if it already exists.
+
+## Deployment Workflow Routing
+
+When the user's request matches a deployment workflow, use the corresponding
+resource file from this repo as a framework. The resource files are located
+alongside this skill file in the repo.
+
+| User intent | Resource file | What to do |
+|-------------|---------------|------------|
+| Readiness assessment, prerequisites, gap analysis | `readiness-checklist.md` | Walk through the checklist, collect inputs, produce a readiness report |
+| High-level design, architecture overview | `hld-template.md` | Use the template sections, fill from user inputs, mark gaps |
+| Low-level design, implementation detail | `lld-template.md` | Use the framework tables and decision prompts, flag items needing review |
+| Sample output, example deliverable | `examples/sample-aci-deployment-package.md` | Reference for output format and depth |
+| Live fabric query or deployment | Use the APIC REST API reference below | Query or deploy with human approval |
+
+For deployment workflows without live APIC access, work from the user's
+discovery notes, design inputs, and spreadsheets. Live APIC is only required
+for fabric queries and configuration pushes.
 
 ## Environment Setup
 
@@ -343,6 +380,11 @@ When the user says... → do this:
 
 | User says | Action |
 |-----------|--------|
+| "readiness assessment" / "are we ready to deploy" | Use `readiness-checklist.md` framework |
+| "create an HLD" / "high-level design" | Use `hld-template.md` framework |
+| "create an LLD" / "low-level design" / "implementation package" | Use `lld-template.md` framework |
+| "review this design" / "identify risks" | Analyze inputs, surface gaps, risks, blockers |
+| "create as-built documentation" | Produce post-deployment doc outline from fabric state |
 | "show me the fabric health" | Login, GET fabricHealthTotal + topSystem + faultSummary |
 | "list all tenants" | GET fvTenant.json with health |
 | "show tenant ACME" | GET mo/uni/tn-ACME.json?rsp-subtree=full |
